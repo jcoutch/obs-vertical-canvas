@@ -167,6 +167,9 @@ private:
 	obs_output_t *replayOutput = nullptr;
 	obs_output_t *streamOutput = nullptr;
 
+	obs_output_t *ndiOutput = nullptr;
+	bool ndiOutputRunning = false;
+
 	obs_service_t *stream_service = nullptr;
 
 	uint32_t canvas_width;
@@ -198,6 +201,9 @@ private:
 	std::string record_encoder;
 	obs_data_t *record_encoder_settings;
 	bool virtual_cam_warned;
+
+	bool enable_ndi_output;
+	std::string ndi_output_name;
 
 	QString currentSceneName;
 	bool first_time = false;
@@ -395,6 +401,11 @@ private slots:
 	void ProfileChanged();
 	void OpenPreviewProjector();
 	void OpenSourceProjector();
+	void ToggleNDIOutput();
+	void InitNDI();
+	void UninitNDI();
+	void StartNDIOutput();
+	void StopNDIOutput();
 
 	void NewerVersionAvailable(QString version);
 

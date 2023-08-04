@@ -58,6 +58,9 @@ private:
 	obs_data_t *record_encoder_settings = nullptr;
 	std::map<obs_property_t *, QWidget *> record_encoder_property_widgets;
 
+	QCheckBox *enableNdiOutput;
+	QLineEdit *ndiOutputName;
+
 	std::vector<OBSHotkeyWidget *> hotkeys;
 
 	QIcon generalIcon;

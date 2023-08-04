@@ -70,7 +70,7 @@ if(OS_WINDOWS)
 		)
 	configure_file(${CMAKE_CURRENT_SOURCE_DIR}/resource.rc.in ${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}.rc)
 	target_sources(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}.rc)
-	
+
 elseif(OS_MACOS)
 	set(MACOS_BUNDLEID "tv.aitum.${PROJECT_NAME}")
 	set(MACOSX_PLUGIN_GUI_IDENTIFIER "${MACOS_BUNDLEID}")
@@ -109,4 +109,6 @@ else()
         "${CMAKE_SOURCE_DIR}/UI/obs-frontend-api")
     set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER "plugins/aitum")
 endif()
-setup_plugin_target(${PROJECT_NAME})
+
+#setup_plugin_target(${PROJECT_NAME})
+set_target_properties_obs(vertical-canvas PROPERTIES FOLDER plugins PREFIX "")

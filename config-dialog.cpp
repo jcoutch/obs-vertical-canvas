@@ -446,9 +446,30 @@ OBSBasicSettings::OBSBasicSettings(CanvasDock *canvas_dock, QMainWindow *parent)
 
 	streamingAdvancedGroup->setLayout(streamingAdvancedLayout);
 
+	auto streamingNdiGroup = new QGroupBox(QString::fromUtf8(
+		obs_module_text("Ndi")));
+	auto streamingNdiLayout = new QFormLayout;
+	streamingNdiLayout->setContentsMargins(9, 2, 9, 9);
+	streamingNdiLayout->setFieldGrowthPolicy(
+		QFormLayout::AllNonFixedFieldsGrow);
+	streamingNdiLayout->setLabelAlignment(
+		Qt::AlignRight | Qt::AlignTrailing | Qt::AlignVCenter);
+
+	enableNdiOutput = new QCheckBox;
+	ndiOutputName = new QLineEdit;
+
+	streamingNdiLayout->addRow(QString::fromUtf8(
+		obs_module_text("EnableNdi")),
+		enableNdiOutput);
+	streamingNdiLayout->addRow(QString::fromUtf8(
+		obs_module_text("NdiOutputName")),ndiOutputName);
+
+	streamingNdiGroup->setLayout(streamingNdiLayout);
+
 	vb = new QVBoxLayout;
 	vb->setContentsMargins(0, 0, 0, 0);
 	vb->addWidget(streamingGroup);
+	vb->addWidget(streamingNdiGroup);
 	vb->addWidget(streamingAdvancedGroup);
 	vb->addStretch();
 	streamingPage->setLayout(vb);
@@ -882,6 +903,9 @@ void OBSBasicSettings::LoadSettings()
 		LoadProperty(kv.first, canvasDock->record_encoder_settings,
 			     kv.second);
 	}
+
+	enableNdiOutput->setChecked(canvasDock->enable_ndi_output);
+	ndiOutputName->setText(canvasDock->ndi_output_name.c_str());
 }
 
 void OBSBasicSettings::SaveSettings()
@@ -1110,6 +1134,9 @@ void OBSBasicSettings::SaveSettings()
 			}
 		}
 	}
+
+	canvasDock->enable_ndi_output = enableNdiOutput->isChecked();
+	canvasDock->ndi_output_name = ndiOutputName->text().toUtf8().constData();
 
 	obs_data_apply(canvasDock->record_encoder_settings,
 		       record_encoder_settings);

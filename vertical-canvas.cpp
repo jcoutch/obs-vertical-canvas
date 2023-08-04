@@ -955,6 +955,9 @@ CanvasDock::CanvasDock(obs_data_t *settings, QWidget *parent)
 		transition = GetTransition(
 			obs_source_get_display_name("fade_transition"));
 
+	enable_ndi_output = obs_data_get_bool(settings, "enable_ndi_output");
+	ndi_output_name = obs_data_get_string(settings, "ndi_output_name");
+
 	SwapTransition(transition);
 
 	const QString title = QString::fromUtf8(obs_module_text("Vertical"));
@@ -4779,6 +4782,9 @@ bool CanvasDock::StartVideo()
 		ovi.output_height = canvas_height;
 		video = obs_view_add2(view, &ovi);
 		started_video = true;
+
+		InitNDI();
+		ToggleNDIOutput();
 	}
 	return started_video;
 }
@@ -4895,6 +4901,7 @@ void CanvasDock::ConfigButtonClicked()
 	configDialog->LoadSettings();
 	configDialog->exec();
 	save_canvas();
+	ToggleNDIOutput();
 }
 
 void CanvasDock::ReplayButtonClicked(QString filename)
@@ -6179,6 +6186,11 @@ obs_data_t *CanvasDock::SaveSettings()
 		data, "transition",
 		transitionsDock->transition->currentText().toUtf8().constData());
 
+	obs_data_set_bool(data, "enable_ndi_output",
+			  enable_ndi_output);
+	obs_data_set_string(data, "ndi_output_name",
+			    ndi_output_name.c_str());
+
 	return data;
 }
 
@@ -7427,6 +7439,77 @@ void CanvasDock::OpenSourceProjector()
 		return;
 	obs_frontend_open_projector("Source", monitor, nullptr,
 				    obs_source_get_name(source));
+}
+
+void CanvasDock::ToggleNDIOutput()
+{
+	if (enable_ndi_output)
+	{
+		StartNDIOutput();
+	}
+	else
+	{
+		StopNDIOutput();
+	}
+
+}
+
+void CanvasDock::InitNDI()
+{
+	if (ndiOutput != nullptr) {
+		blog(LOG_INFO, "vertical-canvas: NDI vertical output already initialized");
+		return;
+	}
+
+	blog(LOG_INFO, "vertical-canvas: Initializing NDI vertical output");
+	obs_data_t *settings = obs_data_create();
+	obs_data_set_string(settings, "ndi_name", ndi_output_name.c_str());
+	ndiOutput = obs_output_create("ndi_output", "NDI Main Vertical Output", settings, nullptr);
+	obs_data_release(settings);
+
+	obs_output_set_media(ndiOutput, video, obs_get_audio());
+
+	blog(LOG_INFO, "vertical-canvas: NDI vertical output initialized");
+}
+
+void CanvasDock::UninitNDI()
+{
+	if (ndiOutput == nullptr) {
+		blog(LOG_INFO, "vertical-canvas: NDI vertical output already uninitialized");
+		return;
+	}
+
+	if (ndiOutputRunning) {
+		StopNDIOutput();
+	}
+
+	blog(LOG_INFO, "vertical-canvas: Uninitializing NDI vertical output");
+	obs_output_release(ndiOutput);
+	ndiOutput = nullptr;
+	ndiOutputRunning = false;
+
+	blog(LOG_INFO, "vertical-canvas: NDI vertical output uninitialized");
+}
+
+void CanvasDock::StartNDIOutput()
+{
+	if (ndiOutput == nullptr) {
+		blog(LOG_ERROR, "vertical-canvas: NDI vertical output attempted to start before initialization");
+		return;
+	}
+
+	blog(LOG_INFO, "vertical-canvas: starting NDI vertical output");
+	obs_output_start(ndiOutput);
+	ndiOutputRunning = true;
+	blog(LOG_INFO, "vertical-canvas: started NDI vertical output");
+}
+
+void CanvasDock::StopNDIOutput()
+{
+	blog(LOG_INFO, "vertical-canvas: stopping NDI vertical output");
+	obs_output_stop(ndiOutput);
+	ndiOutputRunning = false;
+	blog(LOG_INFO, "vertical-canvas: stopped NDI vertical output");
 }
 
 LockedCheckBox::LockedCheckBox() {}
